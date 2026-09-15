@@ -1,5 +1,4 @@
-import os
-
+import streamlit as st
 from groq import Groq
 
 CHAT_MODEL = "openai/gpt-oss-20b"
@@ -10,9 +9,8 @@ _client = None
 def get_client() -> Groq:
     global _client
     if _client is None:
-        _client = Groq(api_key=os.environ["GROQ_API_KEY"])
+        _client = Groq(api_key=st.secrets["GROQ_API_KEY"])
     return _client
-
 
 def stream_answer(question: str, context: str):
     system_prompt = (
