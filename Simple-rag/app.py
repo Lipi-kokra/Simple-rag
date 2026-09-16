@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import chromadb
 import streamlit as st
 
