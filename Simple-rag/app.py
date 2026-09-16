@@ -1,6 +1,3 @@
-import tempfile
-from pathlib import Path
-
 import chromadb
 import streamlit as st
 
@@ -9,6 +6,7 @@ from embeddings import embed
 from llm import stream_answer
 from loader import load_documents
 
+DOCS_DIR = Path(__file__).parent / "docs_dir"
 DB_DIR = Path(__file__).parent / "chroma_db"
 COLLECTION = "documents"
 TOP_K = 4
@@ -23,13 +21,9 @@ def get_collection():
     return client.get_or_create_collection(COLLECTION)
 
 
-def ingest(files) -> int:
-    with tempfile.TemporaryDirectory() as tmp:
-        tmp_dir = Path(tmp)
-        for f in files:
-            (tmp_dir / f.name).write_bytes(f.getvalue())
-        docs = load_documents(tmp_dir)
-
+def ingest() -> int:
+    docs = load_documents(DOCS_DIR)
+    
     collection = get_collection()
     ids, texts, metadatas = [], [], []
     for source, text in docs:
@@ -56,9 +50,9 @@ with st.sidebar:
     uploaded = st.file_uploader(
         "Upload files (pdf, docx, txt, md)", type=["pdf", "docx", "txt", "md"], accept_multiple_files=True
     )
-    if uploaded and st.button("Ingest"):
+    if st.button("Re-ingest documents"):
         with st.spinner("Chunking + embedding..."):
-            n = ingest(uploaded)
+            n = ingest()
         st.success(f"Indexed {n} chunks.")
     st.caption(f"{get_collection().count()} chunks currently indexed.")
 
